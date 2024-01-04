@@ -1,0 +1,19 @@
+body {
+    background-color: lightgray;
+}
+
+.navbar {
+    padding: 1em;
+}
+
+.category {
+    width: 70vw;
+}
+
+.hidden {
+    display: none;
+  }
+  
+.rowDiv:hover > .hidden {
+    display: block;
+}
