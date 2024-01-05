@@ -4,8 +4,6 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField ,SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-import json
 import bcrypt
 
 app = Flask(__name__)
@@ -70,7 +68,7 @@ def todo(user_id):
         # redirect to prevent form reposting
         return redirect(url_for('todo', user_id=user_id))
     category = Tasks.query.filter_by(user_id=user_id, is_done=False)
-    return render_template('account.html', form=form, user_id=user_id, category=category, is_todo=False)
+    return render_template('account.html', form=form, user_id=user_id, category=category, is_done=False)
 
 @app.route('/html/<int:user_id>/done', methods=['GET', 'POST'])
 def done(user_id):
@@ -85,7 +83,7 @@ def done(user_id):
         # redirect to prevent form reposting
         return redirect(url_for('done', user_id=user_id))
     category = Tasks.query.filter_by(user_id=user_id, is_done=True)
-    return render_template('account.html', form=form, user_id=user_id, category=category, is_todo=True)
+    return render_template('account.html', form=form, user_id=user_id, category=category, is_done=True)
 
 @app.route('/html/<int:user_id>/convert<int:task_id>', methods=['GET', 'POST'])
 def convert(user_id, task_id):
@@ -93,11 +91,12 @@ def convert(user_id, task_id):
         return redirect(url_for('auth'))
     task = Tasks.query.get_or_404(task_id)
     task.is_done = not task.is_done
-    try:
-        db.session.commit()
-    except:
-        flash('There was an error with database update!')
-    return redirect(url_for('todo', user_id=user_id))
+    db.session.commit()
+
+    if (not task.is_done):
+        return redirect(url_for('done', user_id=user_id))
+    else:
+        return redirect(url_for('todo', user_id=user_id))
 
 @app.route('/html/<int:user_id>/update<int:task_id>', methods=['GET', 'POST'])
 def update(user_id, task_id):
@@ -108,11 +107,14 @@ def update(user_id, task_id):
     current_description = task.description
     if form.validate_on_submit():
         task.description = form.task.data
-        try:
-            db.session.commit()
-        except:
-            flash('There was an error with database update!')
-    return render_template('account.html', form=form, description=current_description)
+        db.session.commit()
+
+        if (task.is_done):
+            return redirect(url_for('done', user_id=user_id))
+        else:
+            return redirect(url_for('todo', user_id=user_id))
+        
+    return render_template('update.html', form=form, description=current_description)
 
 @app.route('/html/<int:user_id>/delete<int:task_id>', methods=['GET', 'POST'])
 def delete(user_id, task_id):
@@ -121,7 +123,10 @@ def delete(user_id, task_id):
     task = Tasks.query.get_or_404(task_id)
     db.session.delete(task)
     db.session.commit()
-    return redirect(url_for('todo', user_id=user_id))
+    if (task.is_done):
+        return redirect(url_for('done', user_id=user_id))
+    else:
+        return redirect(url_for('todo', user_id=user_id))
 
 @app.route('/html/<int:user_id>/logout', methods=['GET', 'POST'])
 def logout(user_id):

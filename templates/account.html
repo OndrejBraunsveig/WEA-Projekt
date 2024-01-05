@@ -7,24 +7,29 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
     <title>TODO list</title>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body>
     <div class="d-flex justify-content-between p-3 bg-dark text-white navbar">
-        <h1>TODO</h1>
-        <div class="btn-group" role="group" aria-label="Selector buttons">
-            {% if is_todo %}
-                <a href="{{ url_for('todo', user_id=user_id) }}" class="btn btn-danger">Unfinished</a>
-                <a href="{{ url_for('done', user_id=user_id) }}" class="btn btn-success active">Finished  </a>
-            {% else %}
-                <a href="{{ url_for('todo', user_id=user_id) }}" class="btn btn-danger active">Unfinished</a>
+        {% if is_done %}
+            <h1>DONE</h1>
+            <div class="btn-group" role="group" aria-label="Selector buttons">
+                <a href="{{ url_for('todo', user_id=user_id) }}" class="btn btn-outline-danger">Unfinished</a>
                 <a href="{{ url_for('done', user_id=user_id) }}" class="btn btn-success">Finished  </a>
-            {% endif %}
+            </div>
+        {% else %}
+            <h1>TODO</h1>
+            <div class="btn-group" role="group" aria-label="Selector buttons">
+                <a href="{{ url_for('todo', user_id=user_id) }}" class="btn btn-danger">Unfinished</a>
+                <a href="{{ url_for('done', user_id=user_id) }}" class="btn btn-outline-success">Finished  </a>
+            </div>
+        {% endif %}
+        <div class="d-flex">
+            <p>test</p>
+            <a href="{{ url_for('logout', user_id=user_id) }}" class="btn btn-primary">Logout</a>
         </div>
-        <a href="{{ url_for('logout', user_id=user_id) }}" class="btn btn-primary">Logout</a>
     </div>
     <div class="dropdown mb-3">
-        <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="btn btn-dark dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
             +
         </a>
         <form method="post" class="dropdown-menu p-4 addMenu">
@@ -37,14 +42,14 @@
         </form>
     </div>
     <div class="d-flex align-items-center justify-content-center">
-        <div id="todo" class="category">
+        <div id="category">
             {% for task in category %}
                 <div class="d-flex justify-content-between align-items-center px-2 border-bottom border-secondary rowDiv">
                     <p>{{ task.description }}</p>
                     <div class="btn-group hidden btnDiv" role="group">
-                        <a href="{{ url_for('convert', user_id=user_id, task_id=task.id) }}" class="btn btn-primary">Convert</a>
-                        <a href="{{ url_for('update', user_id=user_id, task_id=task.id) }}" class="btn btn-primary">Edit</a>
-                        <a href="{{ url_for('delete', user_id=user_id, task_id=task.id) }}" class="btn btn-primary">Delete</a>
+                        <a href="{{ url_for('convert', user_id=user_id, task_id=task.id) }}" class="btn btn-secondary">Convert</a>
+                        <a href="{{ url_for('update', user_id=user_id, task_id=task.id) }}" class="btn btn-secondary">Edit</a>
+                        <a href="{{ url_for('delete', user_id=user_id, task_id=task.id) }}" class="btn btn-secondary">Delete</a>
                     </div>
                 </div>
             {% endfor %}
