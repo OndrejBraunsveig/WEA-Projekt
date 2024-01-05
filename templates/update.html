@@ -14,7 +14,6 @@
         <form method="post">
             {{ form.hidden_tag() }}
 
-            {{ form.task.label(class="form-label") }}
             {{ form.task(class="form-control", value=description ) }}
             <br>
             {{ form.submit(class="btn btn-secondary") }}

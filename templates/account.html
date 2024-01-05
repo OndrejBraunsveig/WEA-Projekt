@@ -24,7 +24,7 @@
             </div>
         {% endif %}
         <div class="d-flex">
-            <p>test</p>
+            <button class="btn btn-dark" disabled>{{ username }}</button>
             <a href="{{ url_for('logout', user_id=user_id) }}" class="btn btn-primary">Logout</a>
         </div>
     </div>

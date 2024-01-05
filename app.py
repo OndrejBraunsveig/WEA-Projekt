@@ -38,9 +38,13 @@ class AuthForm(FlaskForm):
     password = PasswordField('Password ', validators=[DataRequired()])
     submit = SubmitField('Login')
 
-class TaskForm(FlaskForm):
+class AddForm(FlaskForm):
     task = StringField('New task', validators=[DataRequired()])
-    submit = SubmitField('Add new task')
+    submit = SubmitField('Add')
+
+class UpdateForm(FlaskForm):
+    task = StringField('Updated task', validators=[DataRequired()])
+    submit = SubmitField('Update')
 
 # Routes
 @app.route('/', methods=['GET', 'POST'])
@@ -59,7 +63,7 @@ def auth():
 def todo(user_id):
     if session['logged_in'] != user_id:
         return redirect(url_for('auth'))
-    form = TaskForm()
+    form = AddForm()
     if form.validate_on_submit():
         task = Tasks(user_id=user_id, description=form.task.data, is_done=False)
         form.task.data = ''
@@ -67,14 +71,16 @@ def todo(user_id):
         db.session.commit()
         # redirect to prevent form reposting
         return redirect(url_for('todo', user_id=user_id))
+    user = Users.query.filter_by(id=user_id).first()
+    username = user.username
     category = Tasks.query.filter_by(user_id=user_id, is_done=False)
-    return render_template('account.html', form=form, user_id=user_id, category=category, is_done=False)
+    return render_template('account.html', form=form, user_id=user_id, username=username, category=category, is_done=False)
 
 @app.route('/html/<int:user_id>/done', methods=['GET', 'POST'])
 def done(user_id):
     if session['logged_in'] != user_id:
         return redirect(url_for('auth'))
-    form = TaskForm()
+    form = AddForm()
     if form.validate_on_submit():
         task = Tasks(user_id=user_id, description=form.task.data, is_done=True)
         form.task.data = ''
@@ -82,10 +88,12 @@ def done(user_id):
         db.session.commit()
         # redirect to prevent form reposting
         return redirect(url_for('done', user_id=user_id))
+    user = Users.query.filter_by(id=user_id).first()
+    username = user.username
     category = Tasks.query.filter_by(user_id=user_id, is_done=True)
-    return render_template('account.html', form=form, user_id=user_id, category=category, is_done=True)
+    return render_template('account.html', form=form, user_id=user_id, username=username, category=category, is_done=True)
 
-@app.route('/html/<int:user_id>/convert<int:task_id>', methods=['GET', 'POST'])
+@app.route('/html/<int:user_id>/convert<int:task_id>', methods=['GET'])
 def convert(user_id, task_id):
     if session['logged_in'] != user_id:
         return redirect(url_for('auth'))
@@ -102,7 +110,7 @@ def convert(user_id, task_id):
 def update(user_id, task_id):
     if session['logged_in'] != user_id:
         return redirect(url_for('auth'))
-    form = TaskForm()
+    form = UpdateForm() 
     task = Tasks.query.get_or_404(task_id)
     current_description = task.description
     if form.validate_on_submit():
@@ -116,7 +124,7 @@ def update(user_id, task_id):
         
     return render_template('update.html', form=form, description=current_description)
 
-@app.route('/html/<int:user_id>/delete<int:task_id>', methods=['GET', 'POST'])
+@app.route('/html/<int:user_id>/delete<int:task_id>', methods=['GET'])
 def delete(user_id, task_id):
     if session['logged_in'] != user_id:
         return redirect(url_for('auth'))
@@ -128,14 +136,14 @@ def delete(user_id, task_id):
     else:
         return redirect(url_for('todo', user_id=user_id))
 
-@app.route('/html/<int:user_id>/logout', methods=['GET', 'POST'])
+@app.route('/html/<int:user_id>/logout', methods=['GET'])
 def logout(user_id):
     if session['logged_in'] != user_id:
         return redirect(url_for('auth'))
     session['logged_in'] = None
     return redirect(url_for('auth'))
 
-@app.route('/json', methods=['GET', 'POST'])
+@app.route('/json', methods=['GET'])
 def show_json():
     users_tasks = []
     users = Users.query.all()
@@ -164,7 +172,7 @@ def show_json():
 
     return jsonify(users_tasks=users_tasks)
 
-@app.route('/json/<int:user_id>', methods=['GET', 'POST'])
+@app.route('/json/<int:user_id>', methods=['GET'])
 def show_user_json(user_id):
     user = Users.query.get_or_404(user_id)
     user_info = {
